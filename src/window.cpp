@@ -28,8 +28,14 @@ Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 
 void Window::GridSelectHandler(wxGridEvent &ev) {
 
+	for (auto *i : folder_icons) i->Destroy();
 	folder_icons.clear();
+
+	for (auto *i : text_icons) i->Destroy();
 	text_icons.clear();
+
+	folder_names.clear();
+
 	working_sizer->Clear(true);
 	
 	int row = ev.GetRow();
@@ -40,25 +46,10 @@ void Window::GridSelectHandler(wxGridEvent &ev) {
 	}
 
 	int folder_count = GetFolderCount();
-	int txt_count = GetTextFilesCount();
+	int text_file_count = GetTextFilesCount();
 
-    for (size_t i = 0; i < folder_count; i++) {
-		wxStaticBitmap *folder = new wxStaticBitmap(working_panel, wxID_ANY, folder_img, wxDefaultPosition, wxSize(70, 70));
-		folder_icons.push_back(folder);
-	}
-
-    for (size_t i = 0; i < txt_count; i++) {
-		wxStaticBitmap *txt = new wxStaticBitmap(working_panel, wxID_ANY, text_img, wxDefaultPosition, wxSize(70, 70));
-		text_icons.push_back(txt);
-	}
-
-	for (wxStaticBitmap *i : folder_icons) {
-		working_sizer->Add(i, 0);
-	}
-
-	for (wxStaticBitmap *i : text_icons) {
-		working_sizer->Add(i, 0);
-	}
+	AddIcon(folder_count, folder_img, folder_names, folder_icons, file_name_label);
+	AddIcon(text_file_count, text_img, text_file_names, text_icons, file_name_label);
 
 	working_panel->Layout();
 	working_panel->Fit();
@@ -83,7 +74,7 @@ void Window::SetQuickAccess() {
 	quick_path->SetColSize(0, grid_size);
 
 	quick_panel_sizer = new wxBoxSizer(wxHORIZONTAL);
-	quick_panel_sizer->Add(quick_path, 0, wxEXPAND);
+	quick_panel_sizer->Add(quick_path, 1, wxEXPAND);
 	quick_panel->SetSizer(quick_panel_sizer);
 	quick_path->Layout();
 }
@@ -92,7 +83,12 @@ int Window::GetFolderCount() {
 	int folder_count = 0;
 
     for (const auto & entry : std::filesystem::directory_iterator(cur_path)) {
-    	if (entry.is_directory()) folder_count+=1;
+    	std::string fname = entry.path().filename().string();
+
+    	if (entry.is_directory() && fname[0] != '.') {
+    		folder_names.push_back(fname);
+    		folder_count+=1;
+    	}
     } return folder_count;
 }
 
@@ -105,6 +101,27 @@ int Window::GetTextFilesCount() {
 	int txt_file_count = 0;
     while (cont) {
     	txt_file_count++;
+    	text_file_names.push_back(std::string(filename));
         cont = dir.GetNext(&filename);
     } return txt_file_count;
+}
+
+void Window::AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxStaticText*> &icon_label) {
+	if (count == 0) return;
+
+	for (int i = 0; i < count; i++) {
+		wxPanel *panel = new wxPanel(working_panel);
+		wxStaticBitmap *icon = new wxStaticBitmap(panel, wxID_ANY, img);
+		wxStaticText *label = new wxStaticText(panel, wxID_ANY, fname[i]);
+
+		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+		sizer->Add(icon, 0, wxALIGN_CENTER);
+		sizer->Add(label, 0, wxALIGN_CENTER);
+		panel->SetSizer(sizer);
+
+		working_sizer->Add(panel, 0, wxLEFT, 10);
+
+		icons.push_back(icon);
+		icon_label.push_back(label);
+	}
 }

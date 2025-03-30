@@ -10,6 +10,12 @@ class Window : public wxFrame {
 	std::vector<wxStaticBitmap*> folder_icons;
 	std::vector<wxStaticBitmap*> text_icons;
 
+	std::vector<wxPanel*> folders_container;
+
+	std::vector<wxStaticText*> file_name_label;
+	std::vector<std::string> folder_names;
+	std::vector<std::string> text_file_names;
+
 	// int folder_count = 0;
 	wxPanel *quick_panel;
 	wxPanel *working_panel;
@@ -31,4 +37,5 @@ public:
 	void AddFolderIcons(int count);
 	int GetFolderCount();
 	int GetTextFilesCount();
+	void AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxStaticText*> &icon_label);
 };
