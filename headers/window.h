@@ -16,11 +16,15 @@ class Window : public wxFrame {
 	std::vector<std::string> folder_names;
 	std::vector<std::string> text_file_names;
 
+	wxTextCtrl *command_input;
+	wxTextCtrl *path_input;
+
 	// int folder_count = 0;
 	wxPanel *quick_panel;
 	wxPanel *working_panel;
 
 	wxBoxSizer *main_sizer;
+
 	wxFlexGridSizer* working_sizer;
 	wxBoxSizer *quick_panel_sizer;
 

@@ -3,6 +3,8 @@
 Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 : wxFrame(NULL, wxID_ANY, wTitle, wPosition, wSize) {
 
+	wxPanel *main_panel = new wxPanel(this); 
+
 	wxImage folder_ico("images/folder-ico.png", wxBITMAP_TYPE_PNG);
 	folder_ico = folder_ico.Scale(70, 70, wxIMAGE_QUALITY_HIGH);
 	folder_img = wxBitmap(folder_ico);
@@ -11,18 +13,38 @@ Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 	text_ico = text_ico.Scale(70, 70, wxIMAGE_QUALITY_HIGH);
 	text_img = wxBitmap(text_ico);
 
-	working_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(500, 500));
-	quick_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(200, 500));
-	quick_panel->SetBackgroundColour(wxColour(196, 196, 196));
+	wxPanel *container_panel = new wxPanel(this); 
+
+	working_panel = new wxPanel(container_panel, wxID_ANY, wxDefaultPosition, wxSize(500, 500));
+	quick_panel = new wxPanel(container_panel, wxID_ANY, wxDefaultPosition, wxSize(200, 500));
+	quick_panel->SetBackgroundColour(wxColour(0, 0, 0));
+
+	wxPanel *command_panel = new wxPanel(this);
+	command_panel->SetBackgroundColour(wxColour(230, 230, 230));
+
+	command_input = new wxTextCtrl(command_panel, wxID_ANY, "");
+	command_input->SetHint("Enter command here...");
+	path_input = new wxTextCtrl(command_panel, wxID_ANY, cur_path);
+
+	wxBoxSizer *command_sizer = new wxBoxSizer(wxHORIZONTAL);
+	command_sizer->Add(path_input, 1, wxEXPAND);
+	command_sizer->Add(command_input, 1, wxEXPAND);
+	command_panel->SetSizer(command_sizer);
+
 
 	SetQuickAccess();
     working_sizer = new wxFlexGridSizer(7, 0, 0);
     for (int i = 0; i < 7; i++) working_sizer->AddGrowableCol(i);
 	working_panel->SetSizer(working_sizer);
 
-	main_sizer = new wxBoxSizer(wxHORIZONTAL);
-	main_sizer->Add(quick_panel, 0, wxEXPAND);
-	main_sizer->Add(working_panel, 0, wxEXPAND);
+	wxBoxSizer *container_sizer = new wxBoxSizer(wxHORIZONTAL);
+	container_sizer->Add(quick_panel, 0, wxEXPAND);
+	container_sizer->Add(working_panel, 0, wxEXPAND);
+	container_panel->SetSizer(container_sizer);
+
+	main_sizer = new wxBoxSizer(wxVERTICAL);
+	main_sizer->Add(command_panel, 1, wxEXPAND);
+	main_sizer->Add(container_panel, 0);
 	SetSizerAndFit(main_sizer);
 }
 
@@ -44,6 +66,8 @@ void Window::GridSelectHandler(wxGridEvent &ev) {
 		case 1: cur_path = "/home/tinnitus/Documents"; break;
 		case 2: cur_path = "/home/tinnitus/Downloads/"; break;
 	}
+
+	path_input->SetValue(cur_path);
 
 	int folder_count = GetFolderCount();
 	int text_file_count = GetTextFilesCount();
@@ -111,8 +135,16 @@ void Window::AddIcon(int count, wxBitmap img, std::vector<std::string> fname, st
 
 	for (int i = 0; i < count; i++) {
 		wxPanel *panel = new wxPanel(working_panel);
+
 		wxStaticBitmap *icon = new wxStaticBitmap(panel, wxID_ANY, img);
+		icon->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent &mev) {
+			if ((fname[i].find(".")) != std::string::npos) {
+				wxMessageBox(fname[i], "Text file");
+			} else wxMessageBox(fname[i], "Folder");
+		});
+
 		wxStaticText *label = new wxStaticText(panel, wxID_ANY, fname[i]);
+		label->Wrap(-1);
 
 		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 		sizer->Add(icon, 0, wxALIGN_CENTER);
