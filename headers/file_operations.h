@@ -4,8 +4,11 @@
 #include <iostream>
 #include <filesystem>
 #include <stdio.h>
+#include "window.h"
 
-void MoveFile(std::string c_path, std::string n_path) {
+void Window::MoveFile(std::string c_path, std::string n_path) {
+	std::cout << "path of file to move: " + c_path + "\n";
+	std::cout << "path of file to move onto: " + n_path + "\n";
 
 	std::ifstream c_file(c_path, std::ios::ate | std::ios::binary);
 
@@ -32,7 +35,7 @@ void MoveFile(std::string c_path, std::string n_path) {
 	std::remove(c_path.c_str());
 }
 
-void CopyFile(std::string c_path, std::string n_path) {
+void Window::CopyFile(std::string c_path, std::string n_path) {
 
 	std::ifstream c_file(c_path, std::ios::ate | std::ios::binary);
 
@@ -57,14 +60,14 @@ void CopyFile(std::string c_path, std::string n_path) {
 	n_file.close();
 }
 
-void DeleteFile(std::string path) {
+void Window::DeleteFile(std::string path) {
 	std::remove(path.c_str());
 }
 
-int GetFileCount(std::string path) {
-	int count = 0;
-    for (const auto & entry : std::filesystem::directory_iterator(path))
-    	count++;
+// int GetFileCount(std::string path) {
+// 	int count = 0;
+//     for (const auto & entry : std::filesystem::directory_iterator(path))
+//     	count++;
 
-    return count;
-}
+//     return count;
+// }

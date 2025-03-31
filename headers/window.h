@@ -2,9 +2,15 @@
 #include <wx/grid.h>
 #include <wx/dir.h>
 
-#include <iostream>
+#include <fstream>
 #include <string>
+#include <vector>
+#include <iostream>
 #include <filesystem>
+#include <stdio.h>
+
+const auto wxDP = wxDefaultPosition;
+const auto wxDS = wxDefaultSize;
 
 class Window : public wxFrame {
 	std::vector<wxStaticBitmap*> folder_icons;
@@ -42,4 +48,9 @@ public:
 	int GetFolderCount();
 	int GetTextFilesCount();
 	void AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxStaticText*> &icon_label);
+
+
+	void MoveFile(std::string c_path, std::string n_path);
+	void CopyFile(std::string c_path, std::string n_path);
+	void DeleteFile(std::string path);
 };

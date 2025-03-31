@@ -1,9 +1,7 @@
-#include "../headers/window.h"
+#include "file_operations.cpp"
 
 Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 : wxFrame(NULL, wxID_ANY, wTitle, wPosition, wSize) {
-
-	wxPanel *main_panel = new wxPanel(this); 
 
 	wxImage folder_ico("images/folder-ico.png", wxBITMAP_TYPE_PNG);
 	folder_ico = folder_ico.Scale(70, 70, wxIMAGE_QUALITY_HIGH);
@@ -13,22 +11,59 @@ Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 	text_ico = text_ico.Scale(70, 70, wxIMAGE_QUALITY_HIGH);
 	text_img = wxBitmap(text_ico);
 
+	wxPanel *main_panel = new wxPanel(this); 
 	wxPanel *container_panel = new wxPanel(this); 
 
-	working_panel = new wxPanel(container_panel, wxID_ANY, wxDefaultPosition, wxSize(500, 500));
-	quick_panel = new wxPanel(container_panel, wxID_ANY, wxDefaultPosition, wxSize(200, 500));
+	working_panel = new wxPanel(container_panel, wxID_ANY, wxDP, wxSize(500, 500));
+	quick_panel = new wxPanel(container_panel, wxID_ANY, wxDP, wxSize(200, 500));
 	quick_panel->SetBackgroundColour(wxColour(0, 0, 0));
 
 	wxPanel *command_panel = new wxPanel(this);
 	command_panel->SetBackgroundColour(wxColour(230, 230, 230));
 
-	command_input = new wxTextCtrl(command_panel, wxID_ANY, "");
+	command_input = new wxTextCtrl(command_panel, wxID_ANY, "", wxDP, wxDS, wxTE_PROCESS_ENTER);
 	command_input->SetHint("Enter command here...");
+	command_input->Bind(wxEVT_TEXT_ENTER, [=](wxCommandEvent &ev) {
+		std::string cmd = command_input->GetValue().ToStdString();
+		std::vector<std::string> params;
+
+		std::string curr = ""; int d = 0;
+		for (int i = 0; i < cmd.length(); i++) {
+			if (cmd[i] == ' ') {
+				params.push_back(curr);
+				curr = "";
+			} else curr += cmd[i];
+		}
+
+		if (!curr.empty()) {
+		    params.push_back(curr);
+		}
+
+		for (std::string s : params)
+			std::cout << s << "\n";
+
+		if (params[0] == "mov") {
+			this->MoveFile(params[1], params[2]);
+			std::cout << "done" << "\n";
+			command_input->SetValue("");
+		}
+	});
+
 	path_input = new wxTextCtrl(command_panel, wxID_ANY, cur_path);
 
+	wxButton *back_button = new wxButton(command_panel, wxID_ANY, "<", wxDP, wxSize(50, -1));
+	wxButton *another_button = new wxButton(command_panel, wxID_ANY, ">", wxDP, wxSize(50, -1));
+	wxButton *enter_button = new wxButton(command_panel, wxID_ANY, "Run", wxDP, wxSize(50, -1));
+	// enter_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent &ev) {
+	// 	wxMessageBox(command_input->GetValue(), "test");
+	// });
+
 	wxBoxSizer *command_sizer = new wxBoxSizer(wxHORIZONTAL);
+	command_sizer->Add(back_button, 0);
+	command_sizer->Add(another_button, 0);
 	command_sizer->Add(path_input, 1, wxEXPAND);
 	command_sizer->Add(command_input, 1, wxEXPAND);
+	command_sizer->Add(enter_button, 0);
 	command_panel->SetSizer(command_sizer);
 
 
@@ -120,7 +155,7 @@ int Window::GetTextFilesCount() {
     wxDir dir(cur_path);
 
     wxString filename;
-    bool cont = dir.GetFirst(&filename, "*.*", wxDIR_FILES | wxDIR_DIRS);
+    bool cont = dir.GetFirst(&filename, "*.*", wxDIR_FILES);
 
 	int txt_file_count = 0;
     while (cont) {
