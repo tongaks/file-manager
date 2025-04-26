@@ -4,7 +4,7 @@
 bool App::OnInit() {
 	wxInitAllImageHandlers();
 	
-	Window *window = new Window("File manager", wxPoint(100, 100), wxSize(700, 500));
+	Window *window = new Window("File manager", wxPoint(100, 100), wxSize(1000, 500));
 	window->Show(true);
 	return true;
 }

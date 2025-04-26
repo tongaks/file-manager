@@ -18,7 +18,7 @@ class Window : public wxFrame {
 
 	std::vector<wxPanel*> folders_container;
 
-	std::vector<wxStaticText*> file_name_label;
+	std::vector<wxTextCtrl*> file_name_label;
 	std::vector<std::string> folder_names;
 	std::vector<std::string> text_file_names;
 
@@ -35,7 +35,7 @@ class Window : public wxFrame {
 	wxBoxSizer *quick_panel_sizer;
 
 	wxGrid *quick_path;
-	std::string cur_path = "/home/tinnitus";
+	std::string cur_path = "/home/tinnitus/";
 
 public:
 	wxBitmap folder_img;
@@ -47,9 +47,11 @@ public:
 	void AddFolderIcons(int count);
 	int GetFolderCount();
 	int GetTextFilesCount();
-	void AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxStaticText*> &icon_label);
+	void AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxTextCtrl*> &icon_label);
+	void HandleCommand(wxCommandEvent &ev);
 
 
+	void MakeFile(std::string fname);
 	void MoveFile(std::string c_path, std::string n_path);
 	void CopyFile(std::string c_path, std::string n_path);
 	void DeleteFile(std::string path);

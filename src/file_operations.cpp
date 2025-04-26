@@ -1,10 +1,20 @@
 #include "../headers/window.h"
 
 void Window::MoveFile(std::string c_path, std::string n_path) {
-	std::cout << "path of file to move: " + c_path + "\n";
-	std::cout << "path of file to move onto: " + n_path + "\n";
 
-	std::ifstream c_file(c_path, std::ios::ate | std::ios::binary);
+	std::string file_path = c_path; 
+	if (c_path.find(cur_path) != 0) {
+		file_path.insert(0, cur_path);
+	}
+
+	std::string destination = n_path;
+	if (n_path.find(cur_path) != 0) {
+		destination.insert(0, cur_path);
+	}
+
+	std::cout << file_path << "\n";
+
+	std::ifstream c_file(file_path, std::ios::ate | std::ios::binary);
 
 	if (!c_file) {
 		std::cout << "File was not found";
@@ -20,18 +30,25 @@ void Window::MoveFile(std::string c_path, std::string n_path) {
 		return;
 	}
 
-	std::ofstream n_file(n_path, std::ios::binary);
+	std::ofstream n_file(destination, std::ios::binary);
 	n_file.write(&buffer[0], file_size);
 
 	c_file.close();
 	n_file.close();
 
-	std::remove(c_path.c_str());
+	std::remove(file_path.c_str());
 }
 
 void Window::CopyFile(std::string c_path, std::string n_path) {
 
-	std::ifstream c_file(c_path, std::ios::ate | std::ios::binary);
+	std::string file_path = c_path; 
+	if (c_path.find(cur_path) != 0) {
+		file_path.insert(0, cur_path);
+	}
+
+	std::cout << file_path << "\n";
+
+	std::ifstream c_file(file_path, std::ios::ate | std::ios::binary);
 
 	if (!c_file) {
 		std::cout << "File was not found";
@@ -56,6 +73,17 @@ void Window::CopyFile(std::string c_path, std::string n_path) {
 
 void Window::DeleteFile(std::string path) {
 	std::remove(path.c_str());
+}
+
+void Window::MakeFile(std::string fname) {
+	std::string file_path = fname; 
+	if (fname.find(cur_path) != 0) {
+		file_path.insert(0, cur_path);
+	}
+
+	std::cout << file_path << "\n";
+
+	std::ofstream file(file_path);
 }
 
 // int GetFileCount(std::string path) {

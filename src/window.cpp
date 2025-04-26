@@ -23,31 +23,8 @@ Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 
 	command_input = new wxTextCtrl(command_panel, wxID_ANY, "", wxDP, wxDS, wxTE_PROCESS_ENTER);
 	command_input->SetHint("Enter command here...");
-	command_input->Bind(wxEVT_TEXT_ENTER, [=](wxCommandEvent &ev) {
-		std::string cmd = command_input->GetValue().ToStdString();
-		std::vector<std::string> params;
 
-		std::string curr = ""; int d = 0;
-		for (int i = 0; i < cmd.length(); i++) {
-			if (cmd[i] == ' ') {
-				params.push_back(curr);
-				curr = "";
-			} else curr += cmd[i];
-		}
-
-		if (!curr.empty()) {
-		    params.push_back(curr);
-		}
-
-		for (std::string s : params)
-			std::cout << s << "\n";
-
-		if (params[0] == "mov") {
-			this->MoveFile(params[1], params[2]);
-			std::cout << "done" << "\n";
-			command_input->SetValue("");
-		}
-	});
+	command_input->Bind(wxEVT_TEXT_ENTER, &Window::HandleCommand, this);
 
 	path_input = new wxTextCtrl(command_panel, wxID_ANY, cur_path);
 
@@ -74,12 +51,12 @@ Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 
 	wxBoxSizer *container_sizer = new wxBoxSizer(wxHORIZONTAL);
 	container_sizer->Add(quick_panel, 0, wxEXPAND);
-	container_sizer->Add(working_panel, 0, wxEXPAND);
+	container_sizer->Add(working_panel, 1, wxEXPAND);
 	container_panel->SetSizer(container_sizer);
 
 	main_sizer = new wxBoxSizer(wxVERTICAL);
-	main_sizer->Add(command_panel, 1, wxEXPAND);
-	main_sizer->Add(container_panel, 0);
+	main_sizer->Add(command_panel, 0, wxEXPAND);
+	main_sizer->Add(container_panel, 1, wxEXPAND);
 	SetSizerAndFit(main_sizer);
 }
 
@@ -97,8 +74,8 @@ void Window::GridSelectHandler(wxGridEvent &ev) {
 	
 	int row = ev.GetRow();
 	switch (row) {
-		case 0: cur_path = "/home/tinnitus"; break;
-		case 1: cur_path = "/home/tinnitus/Documents"; break;
+		case 0: cur_path = "/home/tinnitus/"; break;
+		case 1: cur_path = "/home/tinnitus/Documents/"; break;
 		case 2: cur_path = "/home/tinnitus/Downloads/"; break;
 	}
 
@@ -165,7 +142,7 @@ int Window::GetTextFilesCount() {
     } return txt_file_count;
 }
 
-void Window::AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxStaticText*> &icon_label) {
+void Window::AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxTextCtrl*> &icon_label) {
 	if (count == 0) return;
 
 	for (int i = 0; i < count; i++) {
@@ -178,17 +155,55 @@ void Window::AddIcon(int count, wxBitmap img, std::vector<std::string> fname, st
 			} else wxMessageBox(fname[i], "Folder");
 		});
 
-		wxStaticText *label = new wxStaticText(panel, wxID_ANY, fname[i]);
-		label->Wrap(-1);
+		wxTextCtrl *label = new wxTextCtrl(panel, wxID_ANY, fname[i], wxDP, wxDS, wxTE_CENTRE | wxTE_READONLY);
+		// label->Wrap(-1);
 
 		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 		sizer->Add(icon, 0, wxALIGN_CENTER);
 		sizer->Add(label, 0, wxALIGN_CENTER);
 		panel->SetSizer(sizer);
 
-		working_sizer->Add(panel, 0, wxLEFT, 10);
+		working_sizer->Add(panel, 0, wxEXPAND | wxLEFT, 10);
 
 		icons.push_back(icon);
 		icon_label.push_back(label);
 	}
+}
+
+void Window::HandleCommand(wxCommandEvent &ev) {
+	std::string cmd = command_input->GetValue().ToStdString();
+		std::vector<std::string> params;
+
+		std::string curr = ""; int d = 0;
+		for (int i = 0; i < cmd.length(); i++) {
+			if (cmd[i] == ' ') {
+				params.push_back(curr);
+				curr = "";
+			} else curr += cmd[i];
+		}
+
+		if (!curr.empty()) params.push_back(curr);
+
+		if (params[0] == "mov") {
+			if (params.size() < 3 || params.size() > 3) {
+				wxMessageBox("Usage: mov <file to move> <destination path> ");
+				return;
+			}
+
+			this->MoveFile(params[1], params[2]);
+		} else if (params[0] == "cpy") {
+			if (params.size() < 3) return;
+			this->CopyFile(params[1], params[2]);
+		} else if (params[0] == "del") {
+			if (params.size() < 1) return;
+			this->DeleteFile(params[1]);
+		} else if (params[0] == "make") {
+			this->MakeFile(params[1]);
+		}
+
+		else {
+			std::cout << "Invalid command" << "\n";
+		}
+
+		command_input->SetValue("");
 }
