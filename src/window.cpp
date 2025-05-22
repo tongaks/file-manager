@@ -1,3 +1,10 @@
+// to do
+// security
+// display contents of dir
+// open file with the default app for it
+// optimazation of file operations
+
+
 #include "file_operations.cpp"
 
 Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
@@ -47,7 +54,7 @@ Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 	SetQuickAccess();
     working_sizer = new wxFlexGridSizer(7, 0, 0);
     for (int i = 0; i < 7; i++) working_sizer->AddGrowableCol(i);
-	working_panel->SetSizer(working_sizer);
+	working_panel->SetSizerAndFit(working_sizer);
 
 	wxBoxSizer *container_sizer = new wxBoxSizer(wxHORIZONTAL);
 	container_sizer->Add(quick_panel, 0, wxEXPAND);
@@ -143,20 +150,22 @@ int Window::GetTextFilesCount() {
 }
 
 void Window::AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxTextCtrl*> &icon_label) {
+// void Window::AddIcon(int count, wxBitmap img, std::vector<std::string> fname, std::vector<wxStaticBitmap*> &icons, std::vector<wxStaticText*> &icon_label) {
 	if (count == 0) return;
 
 	for (int i = 0; i < count; i++) {
 		wxPanel *panel = new wxPanel(working_panel);
+		// wxStaticText *label = new wxStaticText(panel, wxID_ANY, fname[i], wxDP, wxDS, wxALIGN_CENTRE_HORIZONTAL);
 
+		wxTextCtrl *label = new wxTextCtrl(panel, wxID_ANY, fname[i], wxDP, wxDS, wxTE_CENTRE | wxTE_READONLY);
 		wxStaticBitmap *icon = new wxStaticBitmap(panel, wxID_ANY, img);
 		icon->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent &mev) {
 			if ((fname[i].find(".")) != std::string::npos) {
 				wxMessageBox(fname[i], "Text file");
 			} else wxMessageBox(fname[i], "Folder");
+			wxTextCtrl *new_lbl = new wxTextCtrl(panel, wxID_ANY, fname[i], wxDP, wxDS, wxTE_READONLY | wxTE_DONTWRAP);
+			// label->SetWindowStyle(wxTE_MULTILINE | wxTE_DONTWRAP);
 		});
-
-		wxTextCtrl *label = new wxTextCtrl(panel, wxID_ANY, fname[i], wxDP, wxDS, wxTE_CENTRE | wxTE_READONLY);
-		// label->Wrap(-1);
 
 		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 		sizer->Add(icon, 0, wxALIGN_CENTER);
