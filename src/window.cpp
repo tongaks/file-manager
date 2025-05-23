@@ -10,10 +10,10 @@
 Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 : wxFrame(NULL, wxID_ANY, wTitle, wPosition, wSize) {
 
+	// image icon setup
 	wxImage folder_ico("images/folder-ico.png", wxBITMAP_TYPE_PNG);
 	folder_ico = folder_ico.Scale(70, 70, wxIMAGE_QUALITY_HIGH);
 	folder_img = wxBitmap(folder_ico);
-
 	wxImage text_ico("images/text-icon-png.jpg", wxBITMAP_TYPE_PNG);
 	text_ico = text_ico.Scale(70, 70, wxIMAGE_QUALITY_HIGH);
 	text_img = wxBitmap(text_ico);
@@ -21,50 +21,51 @@ Window::Window(const wxString wTitle, wxPoint wPosition, wxSize wSize)
 	wxPanel *main_panel = new wxPanel(this); 
 	wxPanel *container_panel = new wxPanel(this); 
 
-	working_panel = new wxPanel(container_panel, wxID_ANY, wxDP, wxSize(500, 500));
-	quick_panel = new wxPanel(container_panel, wxID_ANY, wxDP, wxSize(200, 500));
+	working_panel = new wxPanel(container_panel, wxID_ANY);
+	quick_panel = new wxPanel(container_panel, wxID_ANY, wxDP, wxSize(200, -1));
 	quick_panel->SetBackgroundColour(wxColour(0, 0, 0));
 
 	wxPanel *command_panel = new wxPanel(this);
 	command_panel->SetBackgroundColour(wxColour(230, 230, 230));
 
+	path_input = new wxTextCtrl(command_panel, wxID_ANY, cur_path);
 	command_input = new wxTextCtrl(command_panel, wxID_ANY, "", wxDP, wxDS, wxTE_PROCESS_ENTER);
 	command_input->SetHint("Enter command here...");
-
 	command_input->Bind(wxEVT_TEXT_ENTER, &Window::HandleCommand, this);
 
-	path_input = new wxTextCtrl(command_panel, wxID_ANY, cur_path);
 
+	// buttons in the navbar
 	wxButton *back_button = new wxButton(command_panel, wxID_ANY, "<", wxDP, wxSize(50, -1));
 	wxButton *another_button = new wxButton(command_panel, wxID_ANY, ">", wxDP, wxSize(50, -1));
-	wxButton *enter_button = new wxButton(command_panel, wxID_ANY, "Run", wxDP, wxSize(50, -1));
-	// enter_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent &ev) {
-	// 	wxMessageBox(command_input->GetValue(), "test");
-	// });
+	wxButton *run_button = new wxButton(command_panel, wxID_ANY, "Run", wxDP, wxSize(50, -1));
+	run_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent &ev) {
+		wxMessageBox(command_input->GetValue(), "test");
+	});
 
+	// add navbar components via sizer 
 	wxBoxSizer *command_sizer = new wxBoxSizer(wxHORIZONTAL);
 	command_sizer->Add(back_button, 0);
 	command_sizer->Add(another_button, 0);
 	command_sizer->Add(path_input, 1, wxEXPAND);
 	command_sizer->Add(command_input, 1, wxEXPAND);
-	command_sizer->Add(enter_button, 0);
+	command_sizer->Add(run_button, 0);
 	command_panel->SetSizer(command_sizer);
 
-
 	SetQuickAccess();
-    working_sizer = new wxFlexGridSizer(7, 0, 0);
-    for (int i = 0; i < 7; i++) working_sizer->AddGrowableCol(i);
+	int col_count = 7;
+    working_sizer = new wxFlexGridSizer(col_count, 0, 0);
+    for (int i = 0; i < col_count; i++) working_sizer->AddGrowableCol(i);
 	working_panel->SetSizerAndFit(working_sizer);
 
 	wxBoxSizer *container_sizer = new wxBoxSizer(wxHORIZONTAL);
-	container_sizer->Add(quick_panel, 0, wxEXPAND);
-	container_sizer->Add(working_panel, 1, wxEXPAND);
+	container_sizer->Add(quick_panel, 1, wxEXPAND);
+	container_sizer->Add(working_panel, 4, wxEXPAND);
 	container_panel->SetSizer(container_sizer);
 
 	main_sizer = new wxBoxSizer(wxVERTICAL);
 	main_sizer->Add(command_panel, 0, wxEXPAND);
 	main_sizer->Add(container_panel, 1, wxEXPAND);
-	SetSizerAndFit(main_sizer);
+	SetSizer(main_sizer);
 }
 
 void Window::GridSelectHandler(wxGridEvent &ev) {
